@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>รายการอาหาร - ดอยสะโง้วิว</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2d6a4f;
+            --accent-color: #40916c;
+            --bg-color: #f0f2f5;
+            --danger-color: #e63946;
+        }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            padding: 20px; 
+            background: var(--bg-color); 
+            color: #333;
+            padding-bottom: 120px; 
+            scroll-behavior: smooth;
+        }
+
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        h1 { font-weight: 600; color: var(--primary-color); margin: 0; }
+
+        .category-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 5px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            z-index: 100;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+        .category-nav::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            background: #fff;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .category-title {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+            padding-left: 10px;
+            border-left: 5px solid var(--primary-color);
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            scroll-margin-top: 80px;
+        }
+
+        .btn-back { 
+            text-decoration: none; 
+            color: #666; 
+            font-size: 1rem; 
+            background: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+            gap: 25px; 
+        }
+
+        .menu-item { 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-item img { width: 100%; height: 180px; object-fit: cover; }
+        .menu-content { padding: 15px; text-align: center; }
+        .price { color: var(--primary-color); font-weight: 600; font-size: 1.3rem; }
+
+        .btn-order {
+            background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%);
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 50px; cursor: pointer; width: 100%;
+            font-family: 'Kanit', sans-serif;
+            transition: 0.3s;
+        }
+
+        .cart-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: white;
+            padding: 15px 25px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .cart-info h4 { margin: 0; color: #666; font-weight: 300; }
+        .cart-total { font-size: 1.4rem; color: var(--primary-color); font-weight: 600; }
+
+        .btn-checkout {
+            background: #ff9f1c;
+            color: white; border: none; padding: 12px 30px;
+            border-radius: 12px; font-weight: 600; cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-remove {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .modal-footer {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 id="display-table">โต๊ะของคุณ</h1>
+        <a href="index.html" class="btn-back">← เปลี่ยนโต๊ะ</a>
+    </div>
+
+    <div class="category-nav">
+        <a href="#cat-เมนูแนะนำ" class="nav-btn">✨ เมนูแนะนำ</a>
+        <a href="#cat-อาหารจานเดียว" class="nav-btn">🍛 อาหารจานเดียว</a>
+        <a href="#cat-กับข้าว" class="nav-btn">🍱 กับข้าว</a>
+        <a href="#cat-เครื่องดื่ม" class="nav-btn">🥤 เครื่องดื่ม</a>
+    </div>
+
+    <div id="menu-container" class="menu-grid">
+        <p>กำลังโหลดเมนูรสเด็ด...</p>
+    </div>
+
+    <div class="cart-bar" id="cart-bar" style="display: none;">
+        <div class="cart-info">
+            <h4 id="cart-count">เลือกแล้ว 0 รายการ</h4>
+            <div class="cart-total">฿<span id="total-price">0</span></div>
+        </div>
+        <button class="btn-checkout" onclick="openCartModal()">ดูตะกร้า/สั่งอาหาร</button>
+    </div>
+
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--primary-color); margin-top: 0;">สรุปรายการอาหาร</h2>
+            <hr border="0" style="height: 1px; background: #eee;">
+            <div id="modal-items-list"></div>
+            <div style="margin-top: 20px; text-align: right; font-size: 1.2rem;">
+                <strong>รวมทั้งสิ้น: ฿<span id="modal-total-price">0</span></strong>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-family: 'Kanit';">เลือกเพิ่ม</button>
+                <button onclick="sendOrder()" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-family: 'Kanit'; font-weight: 600;">ยืนยันสั่งอาหาร</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const tname = urlParams.get('tname') || 'ไม่ได้เลือกโต๊ะ';
+        document.getElementById('display-table').innerText = "โต๊ะที่ " + tname;
+
+        let cart = [];
+
+        async function loadMenus() {
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                renderMenusByCategory(data.menus);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('menu-container').innerHTML = 'ไม่สามารถโหลดข้อมูลได้';
+            }
+        }
+
+        function renderMenusByCategory(menus) {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            const categoryOrder = ["เมนูแนะนำ", "อาหารจานเดียว", "กับข้าว", "เครื่องดื่ม"];
+            
+            const grouped = menus.reduce((acc, menu) => {
+                if (menu.Mstatus === 1) {
+                    if (!acc[menu.Mtype]) acc[menu.Mtype] = [];
+                    acc[menu.Mtype].push(menu);
+                }
+                return acc;
+            }, {});
+
+            categoryOrder.forEach(category => {
+                if (grouped[category]) {
+                    const title = document.createElement('h2');
+                    title.className = 'category-title';
+                    title.id = `cat-${category}`;
+                    title.innerText = category;
+                    container.appendChild(title);
+
+                    grouped[category].forEach(menu => {
+                        const div = document.createElement('div');
+                        div.className = 'menu-item';
+                        div.innerHTML = `
+                            <img src="img/${menu.Mimg}" onerror="this.src='https://via.placeholder.com/300x200?text=Food'">
+                            <div class="menu-content">
+                                <h3>${menu.Mid}</h3>
+                                <p class="price">฿${menu.Mprice}</p>
+                                <button class="btn-order" onclick="addToCart('${menu.Mid}', ${menu.Mprice})">
+                                    เลือกใส่ตะกร้า
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            });
+        }
+
+        function addToCart(name, price) {
+            const found = cart.find(item => item.name === name);
+            if (found) {
+                found.quantity += 1;
+            } else {
+                cart.push({ name: name, price: price, quantity: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartBar = document.getElementById('cart-bar');
+            const cartCount = document.getElementById('cart-count');
+            const totalPrice = document.getElementById('total-price');
+
+            if (cart.length > 0) {
+                cartBar.style.display = 'flex';
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cartCount.innerText = `เลือกแล้ว ${totalItems} รายการ`;
+                totalPrice.innerText = totalAmount.toLocaleString();
+            } else {
+                cartBar.style.display = 'none';
+            }
+        }
+
+        function openCartModal() {
+            const modal = document.getElementById('cartModal');
+            const listContainer = document.getElementById('modal-items-list');
+            const modalTotal = document.getElementById('modal-total-price');
+            listContainer.innerHTML = '';
+            
+            cart.forEach((item, index) => {
+                const itemRow = document.createElement('div');
+                itemRow.className = 'cart-item-row';
+                itemRow.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        <small>฿${item.price} x ${item.quantity}</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-weight:bold;">฿${(item.price * item.quantity).toLocaleString()}</span>
+                        <button class="btn-remove" onclick="removeFromCart(${index})">ลบ</button>
+                    </div>
+                `;
+                listContainer.appendChild(itemRow);
+            });
+            modalTotal.innerText = document.getElementById('total-price').innerText;
+            modal.style.display = 'block';
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+            if (cart.length === 0) { closeModal(); } else { openCartModal(); }
+        }
+
+        function closeModal() {
+            document.getElementById('cartModal').style.display = 'none';
+        }
+
+        async function sendOrder() {
+            if (cart.length === 0) return;
+
+            // --- ส่วนที่แก้ไข: ดึงข้อมูล Telegram จาก data.json ---
+            let botToken = "";
+            let chatId = "";
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                botToken = data.telegram[0].token;
+                chatId = data.telegram[0].chatID;
+            } catch (error) {
+                console.error('Error loading Telegram config:', error);
+            }
+
+            const now = new Date();
+            const yearBE = now.getFullYear() + 543;
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const datePrefix = `${yearBE}${month}${day}`;
+            
+            let lastOrderNum = localStorage.getItem('lastOrderNum') || 0;
+            lastOrderNum = parseInt(lastOrderNum) + 1;
+            localStorage.setItem('lastOrderNum', lastOrderNum);
+            
+            const oid = datePrefix + String(lastOrderNum).padStart(4, '0');
+            const orderListText = cart.map(item => `${item.name} x${item.quantity}`).join('\n- ');
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            // --- ส่วนที่แก้ไข: สร้างข้อความและส่งไปยัง Telegram ---
+            const message = `🔔 *มีออเดอร์ใหม่!*\n` +
+                            `--------------------------\n` +
+                            `📌 *เลขที่ออเดอร์:* ${oid}\n` +
+                            `🪑 *โต๊ะที่:* ${tname}\n` +
+                            `📝 *รายการอาหาร:*\n- ${orderListText}\n` +
+                            `💰 *รวมยอด:* ${totalAmount.toLocaleString()} บาท\n` +
+                            `--------------------------`;
+
+            if (botToken && chatId) {
+                const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+                fetch(telegramUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                }).catch(err => console.error('Telegram Error:', err));
+            }
+
+            const orderData = {
+                "Oid": parseInt(oid),
+                "Olist": `รายการอาหาร: ${orderListText.replace(/\n- /g, ', ')}`,
+                "Oprice": totalAmount,
+                "Ostatus": 1,
+                "Otable": isNaN(tname) ? tname : parseInt(tname)
+            };
+
+            let existingOrders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
+            existingOrders.push(orderData);
+            localStorage.setItem('temp_orders', JSON.stringify(existingOrders));
+
+            alert('สั่งอาหารเรียบร้อยแล้ว! ออเดอร์ถูกส่งไปยังครัวแล้ว');
+            
+            cart = [];
+            updateCartUI();
+            closeModal();
+            window.location.href = 'orders.html';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('cartModal')) { closeModal(); }
+        }
+
+        loadMenus();
+    </script>
+</body>
+</html>
