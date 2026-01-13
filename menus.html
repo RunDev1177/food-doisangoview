@@ -19,8 +19,17 @@
         .menu-item { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
         .menu-item img { width: 100%; height: 180px; object-fit: cover; }
         .menu-content { padding: 15px; text-align: center; }
-        .price { color: var(--primary-color); font-weight: 600; font-size: 1.3rem; }
-        .btn-order { background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%); color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; width: 100%; font-family: 'Kanit', sans-serif; transition: 0.3s; }
+        .menu-note { color: #e63946; font-size: 0.85rem; margin-bottom: 10px; display: block; min-height: 1.2em; }
+        .price { color: var(--primary-color); font-weight: 600; font-size: 1.3rem; margin-top: 5px; }
+        .btn-order { background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%); color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; width: 100%; font-family: 'Kanit', sans-serif; transition: 0.3s; margin-top: 10px; }
+        
+        #closed-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); color: white; z-index: 3000; 
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .closed-msg { background: white; color: var(--danger-color); padding: 30px; border-radius: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
         .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
         .cart-info h4 { margin: 0; color: #666; font-weight: 300; }
         .cart-total { font-size: 1.4rem; color: var(--primary-color); font-weight: 600; }
@@ -33,6 +42,14 @@
     </style>
 </head>
 <body>
+
+    <div id="closed-overlay">
+        <div class="closed-msg">
+            <h2 style="margin-top:0;">ขออภัย! ครัวปิดแล้ว</h2>
+            <p id="opening-hours-text">เวลาเปิดให้บริการ: -</p>
+            <a href="index.html" class="btn-back" style="display:inline-block; margin-top:15px;">กลับหน้าหลัก</a>
+        </div>
+    </div>
 
     <div class="header">
         <h1 id="display-table">โต๊ะของคุณ</h1>
@@ -68,7 +85,7 @@
             </div>
             <div class="modal-footer">
                 <button onclick="closeModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-family: 'Kanit';">เลือกเพิ่ม</button>
-                <button onclick="sendOrder()" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-family: 'Kanit'; font-weight: 600;">ยืนยันสั่งอาหาร</button>
+                <button id="confirm-order-btn" onclick="sendOrder()" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-family: 'Kanit'; font-weight: 600;">ยืนยันสั่งอาหาร</button>
             </div>
         </div>
     </div>
@@ -79,15 +96,33 @@
         document.getElementById('display-table').innerText = "โต๊ะที่ " + tname;
 
         let cart = [];
+        let isKitchenOpen = true;
 
         async function loadMenus() {
             try {
                 const response = await fetch('data.json');
                 const data = await response.json();
+                checkKitchenTime(data.Ttime[0]);
                 renderMenusByCategory(data.menus);
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('menu-container').innerHTML = 'ไม่สามารถโหลดข้อมูลได้';
+            }
+        }
+
+        function checkKitchenTime(timeConfig) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const parseTime = (timeStr) => {
+                const [hours, minutes] = timeStr.replace('น.', '').split(':');
+                return parseInt(hours) * 60 + parseInt(minutes);
+            };
+            const openTime = parseTime(timeConfig.timeopen);
+            const closeTime = parseTime(timeConfig.timeclose);
+            if (currentTime < openTime || currentTime >= closeTime) {
+                isKitchenOpen = false;
+                document.getElementById('closed-overlay').style.display = 'flex';
+                document.getElementById('opening-hours-text').innerText = `เวลาเปิดให้บริการ: ${timeConfig.timeopen} - ${timeConfig.timeclose}`;
             }
         }
 
@@ -115,12 +150,16 @@
                     grouped[category].forEach(menu => {
                         const div = document.createElement('div');
                         div.className = 'menu-item';
+                        // แสดง Mnote ถ้ามีข้อมูล
+                        const noteHtml = menu.Mnote ? `<span class="menu-note">(${menu.Mnote})</span>` : `<span class="menu-note"></span>`;
+                        
                         div.innerHTML = `
                             <img src="img/${menu.Mimg}" onerror="this.src='https://via.placeholder.com/300x200?text=Food'">
                             <div class="menu-content">
                                 <h3>${menu.Mid}</h3>
+                                ${noteHtml}
                                 <p class="price">฿${menu.Mprice}</p>
-                                <button class="btn-order" onclick="addToCart('${menu.Mid}', ${menu.Mprice})">
+                                <button class="btn-order" onclick="addToCart('${menu.Mid}', ${menu.Mprice}, '${menu.Mnote || ''}')">
                                     เลือกใส่ตะกร้า
                                 </button>
                             </div>
@@ -131,12 +170,16 @@
             });
         }
 
-        function addToCart(name, price) {
+        function addToCart(name, price, note) {
+            if(!isKitchenOpen) {
+                alert('ขออภัย ครัวปิดแล้ว ไม่สามารถสั่งอาหารได้');
+                return;
+            }
             const found = cart.find(item => item.name === name);
             if (found) {
                 found.quantity += 1;
             } else {
-                cart.push({ name: name, price: price, quantity: 1 });
+                cart.push({ name: name, price: price, quantity: 1, note: note });
             }
             updateCartUI();
         }
@@ -166,9 +209,11 @@
             cart.forEach((item, index) => {
                 const itemRow = document.createElement('div');
                 itemRow.className = 'cart-item-row';
+                const noteDisplay = item.note ? `<br><small style="color:var(--danger-color)">* ${item.note}</small>` : '';
+                
                 itemRow.innerHTML = `
                     <div>
-                        <strong>${item.name}</strong><br>
+                        <strong>${item.name}</strong>${noteDisplay}<br>
                         <small>฿${item.price} x ${item.quantity}</small>
                     </div>
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -193,7 +238,7 @@
         }
 
         async function sendOrder() {
-            if (cart.length === 0) return;
+            if (cart.length === 0 || !isKitchenOpen) return;
 
             let botToken = "";
             let chatId = "";
@@ -217,7 +262,13 @@
             localStorage.setItem('lastOrderNum', lastOrderNum);
             
             const oid = datePrefix + String(lastOrderNum).padStart(4, '0');
-            const orderListText = cart.map(item => `${item.name} x${item.quantity}`).join('\n- ');
+            
+            // ปรับการแสดงผลรายการใน Telegram ให้รวมหมายเหตุด้วย
+            const orderListText = cart.map(item => {
+                const noteTxt = item.note ? ` (${item.note})` : '';
+                return `${item.name}${noteTxt} x${item.quantity}`;
+            }).join('\n- ');
+
             const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             const message = `🔔 *มีออเดอร์ใหม่!*\n` +
@@ -258,7 +309,6 @@
             cart = [];
             updateCartUI();
             closeModal();
-            // ส่ง parameter tname ไปยังหน้า orders.html
             window.location.href = `orders.html?tname=${encodeURIComponent(tname)}`;
         }
 
