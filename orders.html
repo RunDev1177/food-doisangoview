@@ -7,24 +7,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background: #f0f2f5; padding: 20px; }
-        .order-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        .status-badge { background: #2d6a4f; color: white; padding: 4px 12px; border-radius: 10px; font-size: 0.8rem; }
+        .order-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 5px solid #ff9f1c; }
+        .status-badge { background: #ff9f1c; color: white; padding: 4px 12px; border-radius: 10px; font-size: 0.8rem; }
         h1 { color: #2d6a4f; }
-        .button-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { flex: 1; text-align: center; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 600; }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; position: sticky; bottom: 20px; }
+        .btn { flex: 1; text-align: center; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn-home { background: #666; color: white; }
-        .btn-order-more { background: #ff9f1c; color: white; }
+        .btn-order-more { background: #2d6a4f; color: white; }
     </style>
 </head>
 <body>
-    <h1 id="order-title">ประวัติการสั่งอาหาร</h1>
+    <h1 id="order-title">รายการที่กำลังปรุง</h1>
     <div id="orders-list">
-        <p>ไม่มีรายการอาหารในขณะนี้</p>
+        <p style="text-align:center; color:#999;">กำลังโหลดข้อมูล...</p>
     </div>
 
     <div class="button-group">
         <a href="index.html" class="btn btn-home">กลับหน้าหลัก</a>
-        <a id="btn-more" href="index.html" class="btn btn-order-more">สั่งอาหารเพิ่ม</a>
+        <a id="btn-more" href="#" class="btn btn-order-more">สั่งอาหารเพิ่ม</a>
     </div>
 
     <script>
@@ -34,41 +34,39 @@
             const currentTable = urlParams.get('tname');
 
             if(currentTable) {
-                document.getElementById('order-title').innerText = `ประวัติการสั่งอาหาร (โต๊ะ ${currentTable})`;
+                document.getElementById('order-title').innerText = `รายการอาหารที่สั่ง (โต๊ะ ${currentTable})`;
                 document.getElementById('btn-more').href = `menus.html?tname=${currentTable}`;
             }
 
             const allOrders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
 
-            // แก้ไขจุดนี้: กรองเฉพาะออเดอร์ของโต๊ะปัจจุบัน และสถานะต้องไม่เท่ากับ 0 (ยังไม่เสร็จ)
-            const myOrders = allOrders.filter(order => order.Otable == currentTable && order.Ostatus !== 0);
+            // แก้ไข: กรองเฉพาะออเดอร์ของโต๊ะนี้ และ สถานะยังไม่เสร็จ (Ostatus === 1)
+            const myOrders = allOrders.filter(order => order.Otable == currentTable && order.Ostatus === 1);
 
             if (myOrders.length > 0) {
                 listContainer.innerHTML = '';
                 [...myOrders].reverse().forEach(order => {
                     const div = document.createElement('div');
-                    div.className = 'order-card';
+                    div.className = `order-card`;
                     div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
                             <strong>ออเดอร์: #${order.Oid}</strong>
-                            <span class="status-badge">กำลังเตรียมอาหาร</span>
+                            <span class="status-badge">⌛ กำลังปรุงอาหาร</span>
                         </div>
-                        <p style="margin: 10px 0;"><strong>โต๊ะที่ :</strong> ${order.Otable}</p>
-                        <p style="color: #666;">${order.Olist}</p>
+                        <p style="margin: 10px 0; color: #444;">${order.Olist}</p>
                         <hr border="0" style="height:1px; background:#eee;">
-                        <div style="text-align:right; font-size:1.2rem; color:#2d6a4f;">
-                            <strong>รวม: ฿${order.Oprice.toLocaleString()}</strong>
+                        <div style="text-align:right; font-size:1.1rem; color:#2d6a4f;">
+                            <strong>ยอดสุทธิ: ฿${order.Oprice.toLocaleString()}</strong>
                         </div>
                     `;
                     listContainer.appendChild(div);
                 });
             } else {
-                listContainer.innerHTML = '<p style="text-align:center; color:#999;">ไม่พบประวัติการสั่งอาหารที่กำลังเตรียมสำหรับโต๊ะนี้</p>';
+                listContainer.innerHTML = '<div style="text-align:center; padding: 40px; color:#999;"><h3>ไม่มีรายการที่กำลังปรุง</h3><p>อาหารของคุณอาจเสิร์ฟเรียบร้อยแล้ว</p></div>';
             }
         }
         
-        // ตั้งเวลาให้รีเฟรชข้อมูลทุก 5 วินาที เพื่อให้เห็นสถานะที่แอดมินกดอัปเดต
-        setInterval(displayOrders, 5000);
+        setInterval(displayOrders, 3000);
         displayOrders();
     </script>
 </body>
