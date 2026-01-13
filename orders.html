@@ -11,8 +11,8 @@
         .status-badge { background: #ff9f1c; color: white; padding: 4px 12px; border-radius: 10px; font-size: 0.8rem; }
         h1 { color: #2d6a4f; }
         .button-group { display: flex; gap: 10px; margin-top: 20px; position: sticky; bottom: 20px; }
-        .btn { flex: 1; text-align: center; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-home { background: #666; color: white; }
+        .btn { flex: 1; text-align: center; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        /* ลบสไตล์ btn-home ออก และเหลือแค่ปุ่มสั่งอาหาร */
         .btn-order-more { background: #2d6a4f; color: white; }
     </style>
 </head>
@@ -23,7 +23,6 @@
     </div>
 
     <div class="button-group">
-        <a href="index.html" class="btn btn-home">กลับหน้าหลัก</a>
         <a id="btn-more" href="#" class="btn btn-order-more">สั่งอาหารเพิ่ม</a>
     </div>
 
@@ -39,8 +38,6 @@
             }
 
             const allOrders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
-
-            // แก้ไข: กรองเฉพาะออเดอร์ของโต๊ะนี้ และ สถานะยังไม่เสร็จ (Ostatus === 1)
             const myOrders = allOrders.filter(order => order.Otable == currentTable && order.Ostatus === 1);
 
             if (myOrders.length > 0) {
@@ -53,7 +50,7 @@
                             <strong>ออเดอร์: #${order.Oid}</strong>
                             <span class="status-badge">⌛ กำลังปรุงอาหาร</span>
                         </div>
-                        <p style="margin: 10px 0; color: #444;">${order.Olist}</p>
+                        <p style="margin: 10px 0; color: #444; line-height: 1.5;">${order.Olist}</p>
                         <hr border="0" style="height:1px; background:#eee;">
                         <div style="text-align:right; font-size:1.1rem; color:#2d6a4f;">
                             <strong>ยอดสุทธิ: ฿${order.Oprice.toLocaleString()}</strong>
@@ -65,8 +62,7 @@
                 listContainer.innerHTML = '<div style="text-align:center; padding: 40px; color:#999;"><h3>ไม่มีรายการที่กำลังปรุง</h3><p>อาหารของคุณอาจเสิร์ฟเรียบร้อยแล้ว</p></div>';
             }
         }
-        
-        setInterval(displayOrders, 3000);
+        setInterval(displayOrders, 5000);
         displayOrders();
     </script>
 </body>
