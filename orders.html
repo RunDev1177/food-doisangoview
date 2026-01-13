@@ -7,45 +7,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background: #f0f2f5; padding: 20px; }
-        .order-card {
-            background: white; padding: 20px; border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px;
-        }
-        .status-badge {
-            background: #2d6a4f; color: white; padding: 4px 12px;
-            border-radius: 10px; font-size: 0.8rem;
-        }
+        .order-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .status-badge { background: #2d6a4f; color: white; padding: 4px 12px; border-radius: 10px; font-size: 0.8rem; }
         h1 { color: #2d6a4f; }
         .button-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { 
-            flex: 1; text-align: center; text-decoration: none; 
-            padding: 12px; border-radius: 10px; font-weight: 600;
-        }
+        .btn { flex: 1; text-align: center; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 600; }
         .btn-home { background: #666; color: white; }
         .btn-order-more { background: #ff9f1c; color: white; }
     </style>
 </head>
 <body>
-    <h1>ประวัติการสั่งอาหาร</h1>
+    <h1 id="order-title">ประวัติการสั่งอาหาร</h1>
     <div id="orders-list">
         <p>ไม่มีรายการอาหารในขณะนี้</p>
     </div>
 
     <div class="button-group">
         <a href="index.html" class="btn btn-home">กลับหน้าหลัก</a>
-        <a href="javascript:history.back()" class="btn btn-order-more">สั่งอาหารเพิ่ม</a>
+        <a id="btn-more" href="index.html" class="btn btn-order-more">สั่งอาหารเพิ่ม</a>
     </div>
 
     <script>
         function displayOrders() {
             const listContainer = document.getElementById('orders-list');
-            // ดึงข้อมูลจาก temp_orders
-            const orders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentTable = urlParams.get('tname');
 
-            if (orders.length > 0) {
+            if(currentTable) {
+                document.getElementById('order-title').innerText = `ประวัติการสั่งอาหาร (โต๊ะ ${currentTable})`;
+                document.getElementById('btn-more').href = `menus.html?tname=${currentTable}`;
+            }
+
+            const allOrders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
+
+            // แก้ไขจุดนี้: กรองเฉพาะออเดอร์ของโต๊ะปัจจุบัน และสถานะต้องไม่เท่ากับ 0 (ยังไม่เสร็จ)
+            const myOrders = allOrders.filter(order => order.Otable == currentTable && order.Ostatus !== 0);
+
+            if (myOrders.length > 0) {
                 listContainer.innerHTML = '';
-                // เรียงออเดอร์ล่าสุดไว้บนสุด
-                [...orders].reverse().forEach(order => {
+                [...myOrders].reverse().forEach(order => {
                     const div = document.createElement('div');
                     div.className = 'order-card';
                     div.innerHTML = `
@@ -62,8 +62,13 @@
                     `;
                     listContainer.appendChild(div);
                 });
+            } else {
+                listContainer.innerHTML = '<p style="text-align:center; color:#999;">ไม่พบประวัติการสั่งอาหารที่กำลังเตรียมสำหรับโต๊ะนี้</p>';
             }
         }
+        
+        // ตั้งเวลาให้รีเฟรชข้อมูลทุก 5 วินาที เพื่อให้เห็นสถานะที่แอดมินกดอัปเดต
+        setInterval(displayOrders, 5000);
         displayOrders();
     </script>
 </body>

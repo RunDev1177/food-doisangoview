@@ -12,7 +12,7 @@
             --bg-color: #f8f9fa;
             --warning: #ff9f1c;
             --success: #2a9d8f;
-            --gray-done: #adb5bd; /* สีเทาสำหรับออเดอร์ที่เสร็จแล้ว */
+            --gray-done: #adb5bd;
         }
 
         body {
@@ -56,7 +56,6 @@
             position: relative;
         }
 
-        /* เมื่อเสร็จสิ้นแล้วให้เปลี่ยนสีขอบและทำให้จางลงเล็กน้อย */
         .order-card.completed {
             border-top-color: var(--success);
             opacity: 0.85;
@@ -94,7 +93,6 @@
             color: var(--accent-color);
         }
 
-        /* ปุ่มคำสั่ง */
         .btn-action {
             width: 100%;
             padding: 10px;
@@ -107,29 +105,9 @@
             margin-top: 15px;
         }
 
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover { background: #21867a; }
-
-        /* สไตล์ปุ่มเมื่อเสร็จสิ้นแล้ว */
-        .btn-completed {
-            background: var(--gray-done);
-            color: white;
-            cursor: default;
-        }
-
-        .btn-clear {
-            background: #e63946;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-family: 'Kanit';
-        }
+        .btn-success { background: var(--success); color: white; }
+        .btn-completed { background: var(--gray-done); color: white; cursor: default; }
+        .btn-clear { background: #e63946; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Kanit'; }
 
         .no-orders {
             text-align: center;
@@ -147,8 +125,7 @@
             <button class="btn-clear" onclick="clearOrders()">ล้างข้อมูลทั้งหมด</button>
         </div>
 
-        <div id="admin-order-list" class="order-grid">
-            </div>
+        <div id="admin-order-list" class="order-grid"></div>
     </div>
 
     <script>
@@ -163,12 +140,12 @@
 
             listContainer.innerHTML = '';
             
-            // ใช้ reverse เพื่อเอาออเดอร์ใหม่ขึ้นก่อน แต่ต้องเก็บ Index จริงไว้
+            // นำรายการล่าสุดขึ้นก่อน
             const reversedOrders = [...orders].reverse();
 
             reversedOrders.forEach((order, index) => {
-                const actualIndex = orders.length - 1 - index; // คำนวณหาตำแหน่งที่ถูกต้องใน Array หลัก
-                const isDone = order.Ostatus === 0; // ตรวจสอบสถานะ (0 = เสร็จสิ้น)
+                const actualIndex = orders.length - 1 - index; 
+                const isDone = order.Ostatus === 0;
 
                 const div = document.createElement('div');
                 div.className = `order-card ${isDone ? 'completed' : ''}`;
@@ -195,7 +172,6 @@
             });
         }
 
-        // ฟังก์ชันลบข้อมูลทั้งหมด
         function clearOrders() {
             if(confirm('คุณต้องการล้างข้อมูลออเดอร์ทั้งหมดใช่หรือไม่?')) {
                 localStorage.removeItem('temp_orders');
@@ -204,20 +180,17 @@
             }
         }
 
-        // ฟังก์ชันอัปเดตสถานะ
         function updateStatus(originalIndex) {
             let orders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
             if(orders[originalIndex]) {
-                orders[originalIndex].Ostatus = 0; // เปลี่ยนสถานะเป็น 0 (เสร็จสิ้น)
+                // เปลี่ยนสถานะเป็น 0 (เสร็จสิ้น)
+                orders[originalIndex].Ostatus = 0; 
                 localStorage.setItem('temp_orders', JSON.stringify(orders));
-                loadOrdersForAdmin(); // โหลดหน้าใหม่ทันที
+                loadOrdersForAdmin();
             }
         }
 
-        // ตรวจสอบออเดอร์ใหม่ทุกๆ 5 วินาที
         setInterval(loadOrdersForAdmin, 5000);
-
-        // โหลดครั้งแรกเมื่อเปิดหน้า
         loadOrdersForAdmin();
     </script>
 </body>
