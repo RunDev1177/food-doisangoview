@@ -1,18 +1,188 @@
 {
+  "tables": [
+    {
+      "Tid": 1,
+      "Tname": "1"
+    },
+    {
+      "Tid": 2,
+      "Tname": "2"
+    },
+    {
+      "Tid": 3,
+      "Tname": "3"
+    },
+    {
+      "Tid": 4,
+      "Tname": "4"
+    },
+    {
+      "Tid": 5,
+      "Tname": "5"
+    },
+    {
+      "Tid": 6,
+      "Tname": "6"
+    }
+  ],
+  "menus": [
+    {
+      "Mid": "หมูกระทะ",
+      "Mprice": 500,
+      "Mtype": "เมนูแนะนำ",
+      "Mimg": "หมูกระทะ.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "ปลาเผา",
+      "Mprice": 250,
+      "Mtype": "เมนูแนะนำ",
+      "Mimg": "ปลาเผา.jpg",
+      "Mstatus": 1,
+      "Mnote": "ต้องสั่งก่อน 16:00น"
+    },
+    {
+      "Mid": "ข้าวกะเพราหมูสับ",
+      "Mprice": 80,
+      "Mtype": "อาหารจานเดียว",
+      "Mimg": "ข้าวกะเพรา.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "หมูทอดกระเทียมไข่ดาว",
+      "Mprice": 80,
+      "Mtype": "อาหารจานเดียว",
+      "Mimg": "หมูทอดกระเทียมไข่ดาว.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "ข้าวไข่เจียวหมูสับ",
+      "Mprice": 70,
+      "Mtype": "อาหารจานเดียว",
+      "Mimg": "ข้าวไข่เจียว.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "ปีกไก่ทอด",
+      "Mprice": 100,
+      "Mtype": "กับข้าว",
+      "Mimg": "ปีกไก่ทอด.png",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "หมูทอดกระเทียม",
+      "Mprice": 100,
+      "Mtype": "กับข้าว",
+      "Mimg": "หมูทอดกระเทียม.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "ยำวุ้นเส้นหมูสับ",
+      "Mprice": 120,
+      "Mtype": "กับข้าว",
+      "Mimg": "ยำวุ้นเส้นหมูสับ.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "ยำวุ้นเส้นหมูยอ",
+      "Mprice": 120,
+      "Mtype": "กับข้าว",
+      "Mimg": "ยำวุ้นเส้นหมูยอ.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "ยำไข่ดาว",
+      "Mprice": 100,
+      "Mtype": "กับข้าว",
+      "Mimg": "ยำไข่ดาว.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "เบียร์ช้าง ขวด",
+      "Mprice": 80,
+      "Mtype": "เครื่องดื่ม",
+      "Mimg": "เบียร์ช้าง ขวด.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "เบียร์ลีโอ ขวด",
+      "Mprice": 90,
+      "Mtype": "เครื่องดื่ม",
+      "Mimg": "เบียร์ลีโอ ขวด.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "เบียร์สิงห์ ขวด",
+      "Mprice": 100,
+      "Mtype": "เครื่องดื่ม",
+      "Mimg": "เบียร์สิงห์ ขวด.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "เบียร์ช้าง กระป๋องยาว",
+      "Mprice": 60,
+      "Mtype": "เครื่องดื่ม",
+      "Mimg": "เบียร์ช้าง กระป๋องยาว.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "เบียร์ลีโอ กระป๋องยาว",
+      "Mprice": 65,
+      "Mtype": "เครื่องดื่ม",
+      "Mimg": "เบียร์ลีโอ กระป๋องยาว.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    },
+    {
+      "Mid": "เบียร์สิงห์ กระป๋องยาว",
+      "Mprice": 70,
+      "Mtype": "เครื่องดื่ม",
+      "Mimg": "เบียร์สิงห์ กระป๋องยาว.jpg",
+      "Mstatus": 1,
+      "Mnote": ""
+    }
+
+  ],
+  "orders": [
+    {
+      "Oid": 10001,
+      "Olist": "รายการอาหาร: ส้มตำ x1, ไก่ย่าง x1",
+      "Oprice": 230,
+      "Ostatus": 1,
+      "Otable": 1
+    }
+  ],
   "telegram" : [
     {
       "token" : "8490446513:AAGjPXZbEPkK6pHW63nRKjPu2mzUwLrsRw0",
       "chatID" : "-1003584338987"
     }
   ],
-  "googlescript" : [
+  "Ttime" : [
     {
-      "url" : "https://script.google.com/macros/s/AKfycbyY7qmUA31q_LLoSCuTyqru3y3pD2IFSK1ENepEu44ymjjIajs5afmzPlfB1iwe367w/exec"
+      "timeopen" : "13:00น.",
+      "timeclose" : "19:00น."
     }
   ],
-   "timeservice" : [
-    {
-      "slots": ["กินเลย","17:00น.", "17:30น.", "18:00น.", "18:30น.", "19:00น."]
-    }
+  "Teat" : [
+  "พร้อมกินเลย",
+  "17:00น.",
+  "17:30น.",
+  "18:00น.",
+  "18:30น.",
+  "19:00น."
   ]
 }

@@ -2,448 +2,148 @@
 <html lang="th">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Dashboard </title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ระบบหลังร้าน - จัดการออเดอร์</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #1B6E3F;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
+        :root {
+            --primary-color: #1b4332;
+            --accent-color: #2d6a4f;
+            --bg-color: #f8f9fa;
+            --warning: #ff9f1c;
+            --success: #2a9d8f;
+            --danger: #e63946;
+            --gray-done: #adb5bd;
+            --time-color: #0077b6;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .status-wait { border-left: 5px solid #ef4444; }
-        .status-process { border-left: 5px solid #f59e0b; }
-        .status-done { border-left: 5px solid #10b981; }
+
+        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; }
+        .admin-container { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        h1 { color: var(--primary-color); margin: 0; font-size: 1.5rem; }
+        .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .order-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-top: 5px solid var(--warning); position: relative; transition: transform 0.2s; }
+        .order-card:hover { transform: translateY(-5px); }
+        .order-card.completed { border-top-color: var(--success); opacity: 0.8; }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .table-no { background: var(--primary-color); color: white; padding: 2px 10px; border-radius: 8px; font-size: 1.1rem; }
         
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 24px;
-            border-radius: 24px;
-            width: 95%;
-            max-width: 650px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .editable-input:focus {
-            background-color: #fff;
-            border-color: #1B6E3F;
-            box-shadow: 0 0 0 2px rgba(27, 110, 63, 0.1);
-        }
-        .btn-close-modal {
-            color: #ef4444;
-            font-size: 2.25rem; /* 36px */
-            line-height: 1;
-            padding: 0.5rem;
-            transition: all 0.2s;
-            border-radius: 0.75rem;
-            font-weight: 300;
-        }
-        .btn-close-modal:hover {
-            background-color: #fef2f2;
-            transform: scale(1.1);
-        }
+        /* สไตล์ใหม่สำหรับเวลาทาน */
+        .eat-time-badge { background: var(--time-color); color: white; padding: 2px 10px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 10px; display: inline-block; }
+        
+        .order-list { background: #fdfdfd; border: 1px dashed #ddd; padding: 10px; border-radius: 10px; margin: 10px 0; color: #444; min-height: 50px; line-height: 1.6; }
+        .order-total { text-align: right; font-size: 1.2rem; font-weight: 600; color: var(--accent-color); }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 15px; }
+        .btn-action { flex: 3; padding: 10px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Kanit'; font-weight: 600; transition: 0.3s; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #21867a; }
+        .btn-completed { background: var(--gray-done); color: white; cursor: default; }
+        
+        .btn-delete { flex: 1; background: #fff; color: var(--danger); border: 1.5px solid var(--danger); padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'Kanit'; font-weight: 600; transition: 0.3s; }
+        .btn-delete:hover { background: var(--danger); color: white; }
+        
+        .btn-clear-all { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Kanit'; transition: 0.3s; }
+        .btn-clear-all:hover { background: #000; }
+        .no-orders { text-align: center; grid-column: 1 / -1; padding: 50px; color: #999; }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
 
-    <!-- ส่วนหัว -->
-    <nav class="bg-[#1B6E3F] text-white p-4 sticky top-0 shadow-lg z-50">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-2">
-                <div class="bg-white p-1 rounded-lg shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#1B6E3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                </div>
-                <span class="text-xl font-bold tracking-wide">Dashboard Admin</span>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button onclick="fetchMenus()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition flex items-center gap-2 text-sm border border-white/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    จัดการเมนู
-                </button>
-                <button onclick="toggleModal('hours-modal')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition flex items-center gap-2 text-sm border border-white/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    เวลาเปิด-ปิด
-                </button>
-                <button onclick="fetchOrders()" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition ml-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                </button>
-            </div>
+    <div class="admin-container">
+        <div class="header">
+            <h1>รายการสั่งอาหาร (Admin)</h1>
+            <button class="btn-clear-all" onclick="clearOrders()">ล้างทั้งหมด</button>
         </div>
-    </nav>
-
-    <!-- Modal เมนูอาหาร (แก้ไขได้) -->
-    <div id="menu-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center gap-3">
-                    <div class="bg-green-100 p-2 rounded-lg text-[#1B6E3F]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800">จัดการเมนูอาหาร</h3>
-                </div>
-                <!-- ปุ่มปิดกากบาทสีแดง ขนาดใหญ่ -->
-                <button onclick="toggleModal('menu-modal')" class="btn-close-modal">&times;</button>
-            </div>
-            
-            <div id="menu-loading" class="flex flex-col items-center py-10 hidden">
-                <div class="loader mb-2"></div>
-                <span class="text-gray-400 text-sm">กำลังโหลดข้อมูลเมนู...</span>
-            </div>
-
-            <div class="overflow-y-auto flex-1 pr-1 custom-scrollbar">
-                <table class="w-full">
-                    <thead class="bg-gray-50 sticky top-0 z-10">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ชื่อเมนู</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase w-32">ราคา (บาท)</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase w-32">สถานะ</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase w-16">บันทึก</th>
-                        </tr>
-                    </thead>
-                    <tbody id="menu-list-content" class="divide-y divide-gray-100">
-                        <!-- รายการเมนูเติมจาก JS -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="mt-4 pt-4 border-t border-gray-100 text-center">
-                <p class="text-[10px] text-gray-400 font-medium">แก้ไขราคาหรือสถานะแล้วกดปุ่มถูกเพื่อบันทึกลง Google Sheet ทันที</p>
-            </div>
-        </div>
+        <div id="admin-order-list" class="order-grid"></div>
     </div>
-
-    <!-- Modal เวลาเปิด-ปิด -->
-    <div id="hours-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center gap-3">
-                    <div class="bg-orange-100 p-2 rounded-lg text-orange-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800">ช่วงเวลาให้บริการ</h3>
-                </div>
-                <button onclick="toggleModal('hours-modal')" class="btn-close-modal">&times;</button>
-            </div>
-
-            <div class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-gray-500 ml-1 italic">เวลาเปิด</label>
-                        <input type="time" id="open-time" value="08:00" class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-orange-400 outline-none text-lg font-bold text-gray-700 shadow-sm bg-gray-50">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-gray-500 ml-1 italic">เวลาปิด</label>
-                        <input type="time" id="close-time" value="19:00" class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-orange-400 outline-none text-lg font-bold text-gray-700 shadow-sm bg-gray-50">
-                    </div>
-                </div>
-
-                <button onclick="updateBusinessHours()" class="w-full bg-[#1B6E3F] hover:bg-[#155a33] text-white font-bold py-4 rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    บันทึกเวลาเปิด-ปิด
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
-        <div class="mb-6 flex flex-wrap items-center gap-3">
-            <label for="search-date" class="text-gray-700 font-semibold text-sm">เลือกดูวันที่:</label>
-            <input type="date" id="search-date" onchange="fetchOrders()" class="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B6E3F] focus:border-[#1B6E3F] outline-none text-gray-600 shadow-sm">
-        </div>
-
-        <div id="loading-overlay" class="fixed inset-0 bg-white/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm">
-            <div class="flex flex-col items-center bg-white p-8 rounded-3xl shadow-2xl">
-                <div class="loader mb-4"></div>
-                <p class="text-gray-600 font-semibold">กำลังดำเนินการ...</p>
-            </div>
-        </div>
-
-        <!-- Desktop Table -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6 hidden md:block">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase text-xs">
-                    <tr>
-                        <th class="px-6 py-4 font-semibold">วัน-เวลา</th>
-                        <th class="px-6 py-4 font-semibold">ID / โต๊ะ</th>
-                        <th class="px-6 py-4 font-semibold">รายการอาหาร</th>
-                        <th class="px-6 py-4 font-semibold text-center">เวลาเสิร์ฟ</th>
-                        <th class="px-6 py-4 font-semibold text-right">ยอดรวม</th>
-                        <th class="px-6 py-4 font-semibold text-center">สถานะ</th>
-                        <th class="px-6 py-4 font-semibold text-center">จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="order-tbody" class="divide-y divide-gray-50 bg-white text-gray-700"></tbody>
-            </table>
-        </div>
-
-        <!-- Mobile Cards -->
-        <div id="order-cards" class="md:hidden space-y-4"></div>
-
-        <div id="empty-state" class="hidden py-24 text-center bg-white rounded-3xl shadow-sm border border-dashed border-gray-200">
-            <div class="text-7xl mb-6 grayscale opacity-50">📦</div>
-            <p class="text-gray-400 text-lg font-medium">ยังไม่มีรายการออเดอร์ในวันนี้</p>
-        </div>
-    </main>
 
     <script>
-        let scriptUrl = "";
+        function loadOrdersForAdmin() {
+            const listContainer = document.getElementById('admin-order-list');
+            const orders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
 
-        function toggleModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = (modal.style.display === "block") ? "none" : "block";
-        }
+            if (orders.length === 0) {
+                listContainer.innerHTML = '<div class="no-orders"><h3>ไม่มีออเดอร์ในขณะนี้</h3></div>';
+                return;
+            }
 
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') event.target.style.display = "none";
-        }
+            listContainer.innerHTML = '';
+            const reversedOrders = [...orders].reverse();
 
-        function setDefaultDate() {
-            const today = new Date();
-            const offset = today.getTimezoneOffset() * 60000;
-            const localISOTime = (new Date(today.getTime() - offset)).toISOString().slice(0, 10);
-            document.getElementById('search-date').value = localISOTime;
-        }
+            reversedOrders.forEach((order, index) => {
+                const actualIndex = orders.length - 1 - index;
+                const isDone = order.Ostatus === 0;
 
-        async function init() {
-            setDefaultDate();
-            try {
-                const response = await fetch('../data.json'); 
-                const config = await response.json();
-                if (config.googlescript && config.googlescript.length > 0) {
-                    scriptUrl = config.googlescript[0].url;
-                    fetchOrders();
+                // พยายามดึงเวลาจาก Olist (กรณีจัดเก็บแบบ (เวลาทาน: xx:xx))
+                let eatTime = "ไม่ระบุเวลา";
+                let displayList = order.Olist;
+                
+                if (order.Olist.includes("(เวลาทาน:")) {
+                    const timeMatch = order.Olist.match(/\(เวลาทาน:\s*(.*?)\)/);
+                    if (timeMatch) {
+                        eatTime = timeMatch[1];
+                        // ลบข้อความส่วนเวลาออกเพื่อให้รายการอาหารดูสะอาดตาขึ้นในส่วน list
+                        displayList = order.Olist.replace(timeMatch[0], "").replace("รายการ:", "").trim();
+                    }
                 }
-            } catch (e) {
-                console.error("Init Error:", e);
+
+                const div = document.createElement('div');
+                div.className = `order-card ${isDone ? 'completed' : ''}`;
+                
+                div.innerHTML = `
+                    <div class="order-header">
+                        <span style="color:#666">#${order.Oid}</span>
+                        <span class="table-no">โต๊ะ: ${order.Otable}</span>
+                    </div>
+                    <div class="eat-time-badge">⌛ เวลาทาน: ${eatTime}</div>
+                    <div class="order-list">${displayList}</div>
+                    <div class="order-total">฿${order.Oprice.toLocaleString()}</div>
+                    
+                    <div class="btn-group">
+                        <button 
+                            onclick="${isDone ? '' : `updateStatus(${actualIndex})`}" 
+                            class="btn-action ${isDone ? 'btn-completed' : 'btn-success'}"
+                            ${isDone ? 'disabled' : ''}>
+                            ${isDone ? '✓ เสิร์ฟแล้ว' : 'เสร็จสิ้น'}
+                        </button>
+                        <button class="btn-delete" onclick="deleteSingleOrder(${actualIndex})">
+                            ลบ
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function deleteSingleOrder(index) {
+            if(confirm('ยืนยันที่จะลบออเดอร์นี้ใช่หรือไม่?')) {
+                let orders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
+                orders.splice(index, 1);
+                localStorage.setItem('temp_orders', JSON.stringify(orders));
+                loadOrdersForAdmin();
             }
         }
 
-        async function fetchMenus() {
-            if (!scriptUrl) return;
-            const content = document.getElementById('menu-list-content');
-            const loading = document.getElementById('menu-loading');
-            
-            toggleModal('menu-modal');
-            content.innerHTML = "";
-            loading.classList.remove('hidden');
-
-            try {
-                const res = await fetch(`${scriptUrl}?action=getMenus`);
-                const data = await res.json();
-                loading.classList.add('hidden');
-
-                if (!data || data.length <= 1) {
-                    content.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-400">ไม่พบข้อมูล</td></tr>';
-                    return;
-                }
-
-                data.slice(1).forEach((row, index) => {
-                    const [name, price, status, type] = row;
-                    if(!name) return;
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-50 transition";
-                    tr.innerHTML = `
-                        <td class="px-4 py-3 text-sm font-medium text-gray-700">
-                            <div class="font-bold">${name}</div>
-                            <div class="text-[10px] text-gray-400 font-normal">${type || 'ทั่วไป'}</div>
-                        </td>
-                        <td class="px-4 py-3">
-                            <input type="number" value="${price}" id="price-${index}" 
-                                class="editable-input w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm font-bold text-[#1B6E3F] outline-none">
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <select id="status-${index}" 
-                                class="editable-input w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold outline-none">
-                                <option value="พร้อม" ${status === 'พร้อม' ? 'selected' : ''}>🟢 พร้อม</option>
-                                <option value="หมด" ${status === 'หมด' ? 'selected' : ''}>🔴 หมด</option>
-                            </select>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="updateMenuData('${name}', ${index})" 
-                                class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg shadow-sm transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
-                        </td>
-                    `;
-                    content.appendChild(tr);
-                });
-            } catch (e) {
-                loading.classList.add('hidden');
-                console.error("Menu fetch error", e);
+        function updateStatus(originalIndex) {
+            let orders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
+            if(orders[originalIndex]) {
+                orders[originalIndex].Ostatus = 0;
+                localStorage.setItem('temp_orders', JSON.stringify(orders));
+                loadOrdersForAdmin();
             }
         }
 
-        async function updateMenuData(menuName, idx) {
-            const price = document.getElementById(`price-${idx}`).value;
-            const status = document.getElementById(`status-${idx}`).value;
-            const overlay = document.getElementById('loading-overlay');
-
-            overlay.classList.remove('hidden');
-            try {
-                const res = await fetch(`${scriptUrl}?action=updateMenu`, {
-                    method: 'POST',
-                    body: JSON.stringify({ name: menuName, price: price, status: status })
-                });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    const btn = document.querySelectorAll('#menu-list-content button')[idx];
-                    btn.classList.replace('bg-green-500', 'bg-blue-500');
-                    setTimeout(() => btn.classList.replace('bg-blue-500', 'bg-green-500'), 1000);
-                } else {
-                    alert("เกิดข้อผิดพลาด: " + result.message);
-                }
-            } catch (e) {
-                alert("ไม่สามารถเชื่อมต่อเพื่อบันทึกได้");
-            } finally {
-                overlay.classList.add('hidden');
+        function clearOrders() {
+            if(confirm('ล้างข้อมูลออเดอร์ทั้งหมดและรีเซ็ตลำดับเลขที่ใช่หรือไม่?')) {
+                localStorage.removeItem('temp_orders');
+                localStorage.setItem('lastOrderNum', 0);
+                loadOrdersForAdmin();
             }
         }
 
-        function formatFoodItems(itemsString) {
-            if (!itemsString) return "-";
-            return itemsString.split(',').map(item => `<div class="py-1 flex items-start gap-2"><span class="text-green-500 mt-1">●</span> <span>${item.trim()}</span></div>`).join('');
-        }
-
-        async function fetchOrders() {
-            const tbody = document.getElementById('order-tbody');
-            const cardContainer = document.getElementById('order-cards');
-            const empty = document.getElementById('empty-state');
-            const selectedDate = document.getElementById('search-date').value;
-            
-            if (!scriptUrl) return;
-
-            try {
-                const res = await fetch(`${scriptUrl}?action=getOrders`);
-                const data = await res.json();
-
-                if (!data || data.length <= 1) {
-                    tbody.innerHTML = ""; cardContainer.innerHTML = ""; empty.classList.remove('hidden'); return;
-                }
-
-                const filteredData = data.slice(1).filter(row => {
-                    const orderDate = new Date(row[0]);
-                    const dStr = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')}`;
-                    return dStr === selectedDate;
-                });
-
-                if (filteredData.length === 0) {
-                    tbody.innerHTML = ""; cardContainer.innerHTML = ""; empty.classList.remove('hidden'); return;
-                }
-
-                empty.classList.add('hidden');
-                tbody.innerHTML = ""; cardContainer.innerHTML = "";
-
-                filteredData.reverse().forEach(row => {
-                    const [timestamp, orderId, items, total, table, status, serveTime] = row;
-                    const fTime = timestamp ? new Date(timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '-';
-                    const statusClass = status === "กำลังทำ" ? "status-process" : (status === "เสิร์ฟแล้ว" ? "status-done" : "status-wait");
-
-                    const tr = document.createElement('tr');
-                    tr.className = `hover:bg-gray-50/50 transition border-l-4 ${statusClass}`;
-                    tr.innerHTML = `
-                        <td class="px-6 py-5 text-xs text-gray-400 font-medium">${fTime} น.</td>
-                        <td class="px-6 py-5">
-                            <div class="font-bold text-gray-800 tracking-tight">#${orderId}</div>
-                            <div class="text-[11px] font-bold text-[#1B6E3F] bg-green-50 px-2 py-0.5 rounded-full inline-block">โต๊ะ ${table}</div>
-                        </td>
-                        <td class="px-6 py-5 text-sm">${formatFoodItems(items)}</td>
-                        <td class="px-6 py-5 text-center text-sm font-bold text-orange-500">${serveTime || '-'}</td>
-                        <td class="px-6 py-5 text-right font-black text-gray-900">${Number(total).toLocaleString()} ฿</td>
-                        <td class="px-6 py-5 text-center">
-                            <select onchange="updateOrderStatus('${orderId}', this.value)" class="text-xs font-bold rounded-xl px-3 py-2 border border-gray-200 bg-white">
-                                <option value="รอ" ${status === 'รอ' ? 'selected' : ''}>⏳ รอ</option>
-                                <option value="กำลังทำ" ${status === 'กำลังทำ' ? 'selected' : ''}>🔥 กำลังทำ</option>
-                                <option value="เสิร์ฟแล้ว" ${status === 'เสิร์ฟแล้ว' ? 'selected' : ''}>✅ เสิร์ฟแล้ว</option>
-                            </select>
-                        </td>
-                        <td class="px-6 py-5 text-center">
-                            <button onclick="deleteOrder('${orderId}')" class="text-gray-300 hover:text-red-500 transition p-2 hover:bg-red-50 rounded-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-
-                    const card = document.createElement('div');
-                    card.className = `bg-white p-5 rounded-3xl shadow-sm border-l-8 ${statusClass} border border-gray-100`;
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-4">
-                            <div><div class="text-[10px] text-gray-400 font-bold mb-1">${fTime} น.</div><div class="font-black text-gray-800 text-xl">โต๊ะ ${table}</div></div>
-                            <button onclick="deleteOrder('${orderId}')" class="text-gray-300 hover:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-                        </div>
-                        <div class="text-sm text-gray-600 mb-4 bg-gray-50 p-4 rounded-2xl">${formatFoodItems(items)}</div>
-                        <div class="flex justify-between items-end">
-                            <span class="text-xl font-black">${Number(total).toLocaleString()} ฿</span>
-                            <select onchange="updateOrderStatus('${orderId}', this.value)" class="text-sm font-bold rounded-2xl px-4 py-2 border border-gray-200">
-                                <option value="รอ" ${status === 'รอ' ? 'selected' : ''}>รอ</option>
-                                <option value="กำลังทำ" ${status === 'กำลังทำ' ? 'selected' : ''}>กำลังทำ</option>
-                                <option value="เสิร์ฟแล้ว" ${status === 'เสิร์ฟแล้ว' ? 'selected' : ''}>เสิร์ฟแล้ว</option>
-                            </select>
-                        </div>
-                    `;
-                    cardContainer.appendChild(card);
-                });
-            } catch (e) { console.error(e); }
-        }
-
-        async function updateOrderStatus(id, st) {
-            document.getElementById('loading-overlay').classList.remove('hidden');
-            try {
-                await fetch(`${scriptUrl}?action=updateStatus`, { method: 'POST', body: JSON.stringify({ orderId: id, status: st }) });
-                fetchOrders();
-            } catch (e) { alert("อัปเดตสถานะไม่สำเร็จ"); }
-            finally { document.getElementById('loading-overlay').classList.add('hidden'); }
-        }
-
-        async function deleteOrder(id) {
-            if (!confirm(`ลบออเดอร์ #${id}?`)) return;
-            document.getElementById('loading-overlay').classList.remove('hidden');
-            try {
-                await fetch(`${scriptUrl}?action=deleteOrder`, { method: 'POST', body: JSON.stringify({ orderId: id }) });
-                fetchOrders();
-            } catch (e) { alert("ลบไม่สำเร็จ"); }
-            finally { document.getElementById('loading-overlay').classList.add('hidden'); }
-        }
-
-        init();
-        setInterval(fetchOrders, 60000);
+        setInterval(loadOrdersForAdmin, 5000);
+        loadOrdersForAdmin();
     </script>
 </body>
 </html>
