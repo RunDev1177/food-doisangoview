@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กำลังส่งข้อมูลออเดอร์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen font-['Kanit']">
+    <div class="text-center p-8 bg-white rounded-3xl shadow-xl max-w-sm w-full mx-4">
+        <div id="loader" class="animate-spin rounded-full h-16 w-16 border-b-4 border-[#1B6E3F] mx-auto mb-6"></div>
+        <h2 id="status-title" class="text-2xl font-bold text-gray-800 mb-2">กำลังส่งออเดอร์...</h2>
+        <p id="status-desc" class="text-gray-500">กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลของคุณ</p>
+        <div id="success-icon" class="hidden text-6xl mb-4">✅</div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const tname = params.get('tname');
+
+        async function processOrder() {
+            const order = JSON.parse(localStorage.getItem('pending_order'));
+            if(!order) { window.location.href = 'index.html'; return; }
+
+            try {
+                const configResp = await fetch('data.json');
+                const config = await configResp.json();
+                
+                const sheetUrl = config.googlescript[0].url;
+                await fetch(`${sheetUrl}?action=addOrder`, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(order)
+                });
+
+                const tel = config.telegram[0];
+                let message = `🔔 *มีออเดอร์ใหม่!*\n\n` +
+                              `🆔 ออเดอร์: \`${order.orderId}\`\n` +
+                              `📍 โต๊ะ: ${order.table}\n` +
+                              `🕒 เวลาเสริฟ: ${order.serveTime}\n\n` +
+                              `🍽 *รายการที่สั่ง:*\n${order.items.replace(/, /g, '\n')}\n\n` +
+                              `💰 *ราคารวม:* ${Number(order.total).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ฿`;
+
+                await fetch(`https://api.telegram.org/bot${tel.token}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: tel.chatID,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('success-icon').classList.remove('hidden');
+                document.getElementById('status-title').innerText = "สั่งอาหารสำเร็จ!";
+                document.getElementById('status-desc').innerText = "กำลังพาคุณไปยังหน้าสรุปออเดอร์...";
+
+                setTimeout(() => {
+                    // ส่ง tname ต่อไปยัง orders.html
+                    window.location.href = `orders.html?tname=${encodeURIComponent(tname || order.table)}`;
+                }, 1500);
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('status-title').innerText = "เกิดข้อผิดพลาด";
+                document.getElementById('status-desc').innerText = "ไม่สามารถส่งออเดอร์ได้";
+            }
+        }
+        window.onload = processOrder;
+    </script>
+</body>
+</html>

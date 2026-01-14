@@ -2,156 +2,104 @@
 <html lang="th">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ดอยสะโง้วิวโฮมสเตย์ - ระบบจองโต๊ะ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เลือกโต๊ะ - ดอยสะโง้วิว โฮมสเตย์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2d6a4f;
-            --secondary-color: #40916c;
-            --bg-color: #f8f9fa;
-            --text-dark: #1b4332;
-        }
-
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        /* ปรับปรุงส่วน Header ให้ชิดซ้าย */
-        .header-container {
-            display: flex;
-            align-items: center; /* จัดให้อยู่กลางแนวตั้งร่วมกัน */
-            gap: 15px; /* ระยะห่างระหว่างโลโก้กับตัวหนังสือ */
-            margin-bottom: 40px;
-            width: 100%;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .logo-img {
-            height: 50px; /* ปรับขนาดความสูงโลโก้ */
-            width: auto;
-            object-fit: contain;
-        }
-
-        .brand-name {
-            font-size: 24px; /* ปรับขนาดตัวหนังสือให้เท่ากับโลโก้ */
-            font-weight: 600;
-            color: var(--text-dark);
-            margin: 0;
-            line-height: 50px; /* ให้ความสูงบรรทัดเท่ากับโลโก้ */
-        }
-
-        /* ปรับเนื้อหาหลักให้อยู่กลาง */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h2 { 
-            color: var(--text-dark); 
-            margin-bottom: 30px;
-        }
-
-        #table-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 25px;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .table-card {
-            aspect-ratio: 1 / 1;
-            background-color: #ffffff;
-            border: 2px solid #d8e2dc;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .table-card.selected {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .status-info {
-            margin-top: 40px;
-            padding: 12px 25px;
-            background: white;
-            border-radius: 50px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
+        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        .primary-bg { background-color: #1B6E3F; }
+        .table-card { transition: all 0.2s; cursor: pointer; border: 2px solid transparent; }
+        .table-card.selected { border-color: #1B6E3F; background-color: #ecfdf5; transform: scale(1.05); }
     </style>
 </head>
-<body>
-
-    <header class="header-container">
-        <img src="img/logo.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/50x50?text=DB'">
-        <h1 class="brand-name">ดอยสะโง้วิวโฮมสเตย์</h1>
+<body class="pb-24">
+    <!-- ปรับ Header ให้มีโลโก้ทางซ้ายและตัวหนังสืออยู่ซ้ายมือ -->
+    <header class="primary-bg text-white p-4 shadow-lg rounded-b-3xl">
+        <div class="max-w-4xl mx-auto flex items-center gap-4">
+            <img src="img/logo.png" alt="Logo" class="w-14 h-14 object-contain rounded-full bg-white p-1" onerror="this.style.display='none'">
+            <div class="text-left">
+                <h1 class="text-xl font-bold leading-tight">ดอยสะโง้วิว โฮมสเตย์</h1>
+                <p class="text-xs opacity-80">กรุณาเลือกโต๊ะที่ท่านนั่ง</p>
+            </div>
+        </div>
     </header>
 
-    <div class="main-content">
-        <h2>เลือกโต๊ะที่ต้องการ</h2>
-
-        <div id="table-grid">
-            <p>กำลังโหลดข้อมูลโต๊ะ...</p>
+    <main class="p-6 max-w-4xl mx-auto">
+        <div id="table-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="col-span-full text-center py-10 text-gray-500 italic">กำลังโหลดข้อมูลโต๊ะ...</div>
         </div>
+    </main>
 
-        <p class="status-info" id="status-text">กรุณาคลิกเลือกโต๊ะในแผนผัง</p>
+    <div id="next-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white shadow-lg hidden">
+        <div class="max-w-4xl mx-auto">
+            <button onclick="goToMenu()" class="w-full primary-bg text-white py-4 rounded-xl text-lg font-bold flex justify-center items-center gap-2">
+                ยืนยันเลือก <span id="selected-table-name"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+        </div>
     </div>
 
     <script>
-      // --- ส่วนที่ต้องเพิ่มเข้าไปใน <script> ของ index.html ---
+        let selectedTid = null;
+        let selectedTname = null;
+        let scriptUrl = "";
 
-async function loadTableData() {
-    try {
-        const response = await fetch('data.json');
-        const data = await response.json();
-        renderTables(data.tables); // ส่งข้อมูล tables ไปวาดหน้าจอ
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('table-grid').innerHTML = 'ไม่สามารถโหลดข้อมูลโต๊ะได้';
-    }
-}
+        async function init() {
+            try {
+                // ดึงการตั้งค่าจาก data.json
+                const configResp = await fetch('data.json');
+                const config = await configResp.json();
+                scriptUrl = config.googlescript[0].url;
+                fetchTables();
+            } catch (e) {
+                console.error("Config load error", e);
+                document.getElementById('table-container').innerHTML = `<div class="col-span-full text-center text-red-500">ไม่พบไฟล์ตั้งค่า (data.json)</div>`;
+            }
+        }
 
-// เรียกใช้งานฟังก์ชันเมื่อเปิดหน้าจอ
-loadTableData();
+        async function fetchTables() {
+            const container = document.getElementById('table-container');
+            try {
+                const response = await fetch(`${scriptUrl}?action=getTables`);
+                const data = await response.json();
+                
+                container.innerHTML = '';
+                // data[0] คือหัวตาราง [ลำดับ, โต๊ะ]
+                for (let i = 1; i < data.length; i++) {
+                    const tid = data[i][0];
+                    const tname = data[i][1];
+                    if(!tname) continue;
 
-// ฟังก์ชันเดิมของคุณ (คงไว้เหมือนเดิม)
-function renderTables(tables) {
-    const container = document.getElementById('table-grid');
-    container.innerHTML = '';
-    tables.forEach(table => {
-        const div = document.createElement('div');
-        div.className = 'table-card';
-        div.innerHTML = `<div style="font-size:2rem"> 🍽️</div><span>${table.Tname}</span>`;
-        
-        div.onclick = () => {
-            document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
-            div.classList.add('selected');
-            document.getElementById('status-text').innerText = '📍 คุณเลือก: ' + table.Tname;
+                    const card = document.createElement('div');
+                    card.className = "table-card bg-white p-8 rounded-2xl shadow-sm flex flex-col items-center justify-center";
+                    card.id = `table-${tid}`;
+                    card.innerHTML = `
+                        <div class="text-4xl mb-3">🍽️</div>
+                        <span class="text-gray-700 font-medium text-lg">โต๊ะ ${tname}</span>
+                    `;
+                    card.onclick = () => {
+                        selectedTid = tid;
+                        selectedTname = tname;
+                        document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        document.getElementById('selected-table-name').innerText = `โต๊ะ ${tname}`;
+                        document.getElementById('next-bar').classList.remove('hidden');
+                    };
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="col-span-full text-center text-red-500">เชื่อมต่อข้อมูลล้มเหลว กรุณาตรวจสอบ Google Script URL</div>`;
+            }
+        }
 
-            setTimeout(() => {
-                // ส่งค่า GET tid และ tname ไปที่ menus.html
-                window.location.href = `menus.html?tid=${table.Tid}&tname=${encodeURIComponent(table.Tname)}`;
-            }, 500);
-        };
-        container.appendChild(div);
-    });
-}
+        function goToMenu() {
+            if (selectedTid) {
+                window.location.href = `menus.html?tid=${selectedTid}&tname=${encodeURIComponent(selectedTname)}`;
+            }
+        }
 
-
+        init();
     </script>
 </body>
 </html>
