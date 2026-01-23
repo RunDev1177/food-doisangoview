@@ -37,6 +37,29 @@
     </div>
 
     <script>
+        // --- ระบบ Idle Timeout 10 นาที ---
+        let idleTimer;
+        const TIMEOUT_URL = "https://www.facebook.com/sangoviewhomestay";
+        const TIMEOUT_DURATION = 10 * 60 * 1000;
+
+        function resetTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                window.location.href = TIMEOUT_URL;
+            }, TIMEOUT_DURATION);
+        }
+
+        window.onload = () => {
+            resetTimer();
+            loadConfig().then(renderOrders);
+            document.getElementById('current-time').innerText = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+        };
+        document.onmousemove = resetTimer;
+        document.onkeydown = resetTimer;
+        document.onclick = resetTimer;
+        document.onscroll = resetTimer;
+        document.ontouchstart = resetTimer;
+
         const params = new URLSearchParams(window.location.search);
         const tname = params.get('tname') || "ไม่ได้ระบุ";
         document.getElementById('table-display').innerText = `โต๊ะ: ${tname}`;
@@ -61,8 +84,6 @@
         function renderOrders() {
             const container = document.getElementById('orders-container');
             const allOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
-            
-            // กรองเฉพาะออเดอร์ของโต๊ะปัจจุบัน
             const filteredOrders = allOrders.filter(order => order.tname === tname);
 
             if (filteredOrders.length === 0) {
@@ -75,8 +96,7 @@
                     <div class="order-head"><span class="order-id">#${order.orderId}</span><span style="font-size:0.8rem; color:#888;">${order.timestamp}</span></div>
                     <div class="order-body">${order.items.map(i => `<div class="item-row"><span>${i.qty}x ${i.name}</span><span>฿${(i.price * i.qty).toLocaleString()}</span></div>`).join('')}</div>
                     <div style="font-size: 0.8rem; color: #666; margin-top: 8px; border-top:1px dashed #eee; padding-top:5px;">
-                        🕒 เสิร์ฟ: ${order.selectedTime || 'ไม่ระบุ'} | 💰 รวม: ฿${order.total.toLocaleString()}<br>
-                        ${order.globalNote ? `📝: ${order.globalNote}` : ''}
+                        🕒 เสิร์ฟ: ${order.selectedTime || 'ไม่ระบุ'} | 💰 รวม: ฿${order.total.toLocaleString()}
                     </div>
                 </div>
             `).join('');
@@ -84,28 +104,21 @@
 
         async function callStaff() {
             if (!telegramConfig.token || !telegramConfig.chatID) {
-                showMsg("❌ ระบบแจ้งเตือนไม่พร้อม"); return;
+                showMsg("❌ ระบบไม่พร้อม"); return;
             }
             const btn = document.querySelector('.btn-call');
             btn.disabled = true; btn.innerText = "กำลังเรียก...";
-            const message = `🔔 <b>[เรียกพนักงาน]</b>\n📍 โต๊ะ: <b>${tname}</b>\n⏰ เวลา: ${new Date().toLocaleTimeString('th-TH')}`;
+            const message = `🔔 <b>[เรียกพนักงาน]</b>\n📍 โต๊ะ: <b>${tname}</b>`;
             try {
-                const res = await fetch(`https://api.telegram.org/bot${telegramConfig.token}/sendMessage`, {
+                await fetch(`https://api.telegram.org/bot${telegramConfig.token}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: telegramConfig.chatID, text: message, parse_mode: 'HTML' })
                 });
-                if(res.ok) showMsg("✅ เรียกพนักงานแล้ว โปรดรอสักครู่");
-                else throw new Error();
-            } catch (e) { showMsg("❌ ไม่สามารถเรียกได้"); }
+                showMsg("✅ เรียกพนักงานแล้วครับ");
+            } catch (e) { showMsg("❌ เกิดข้อผิดพลาด"); }
             finally { setTimeout(() => { btn.disabled = false; btn.innerText = '🔔 เรียกพนักงาน'; }, 5000); }
         }
-
-        window.onload = async () => {
-            await loadConfig();
-            renderOrders();
-            document.getElementById('current-time').innerText = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
-        };
     </script>
 </body>
 </html>
