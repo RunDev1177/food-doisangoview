@@ -2,293 +2,328 @@
 <html lang="th">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>รายการอาหาร - ดอยสะโง้วิว</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เมนูอาหาร - ดอยสะโง้วิวโฮมสเตย์</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-color: #2d6a4f; --accent-color: #40916c; --bg-color: #f0f2f5; --danger-color: #e63946; }
-        body { font-family: 'Kanit', sans-serif; padding: 20px; background: var(--bg-color); color: #333; padding-bottom: 120px; scroll-behavior: smooth; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        h1 { font-weight: 600; color: var(--primary-color); margin: 0; }
-        .category-nav { display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px; margin-bottom: 20px; position: sticky; top: 0; background: var(--bg-color); z-index: 100; white-space: nowrap; scrollbar-width: none; }
-        .category-nav::-webkit-scrollbar { display: none; }
-        .nav-btn { background: #fff; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .category-title { grid-column: 1 / -1; margin-top: 30px; padding-left: 10px; border-left: 5px solid var(--primary-color); color: var(--primary-color); font-size: 1.5rem; scroll-margin-top: 80px; }
-        .btn-back { text-decoration: none; color: #666; font-size: 1rem; background: #fff; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-        .menu-item { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
-        .menu-item img { width: 100%; height: 180px; object-fit: cover; }
-        .menu-content { padding: 15px; text-align: center; }
-        .menu-note { color: #e63946; font-size: 0.85rem; margin-bottom: 10px; display: block; min-height: 1.2em; }
-        .price { color: var(--primary-color); font-weight: 600; font-size: 1.3rem; margin-top: 5px; }
-        .btn-order { background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%); color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; width: 100%; font-family: 'Kanit', sans-serif; transition: 0.3s; margin-top: 10px; }
+        :root {
+            --primary: #2d6a4f;
+            --secondary: #52b788;
+            --accent: #d8f3dc;
+            --dark: #1b4332;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.05);
+            --danger: #e63946;
+            --gray: #adb5bd;
+        }
+        * { box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+        body { background-color: var(--light); color: var(--dark); margin: 0; padding-bottom: 100px; }
+        header { background: var(--white); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
         
-        #closed-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; z-index: 3000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .closed-msg { background: white; color: var(--danger-color); padding: 30px; border-radius: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .shop-status { font-size: 0.85rem; padding: 4px 12px; border-radius: 12px; font-weight: 500; margin-top: 5px; display: inline-block; }
+        .status-open { background: var(--accent); color: var(--primary); }
+        .status-closed { background: #ffe3e3; color: var(--danger); }
 
-        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        .cart-info h4 { margin: 0; color: #666; font-weight: 300; }
-        .cart-total { font-size: 1.4rem; color: var(--primary-color); font-weight: 600; }
-        .btn-checkout { background: #ff9f1c; color: white; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600; cursor: pointer; font-family: 'Kanit', sans-serif; }
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .modal-content { background-color: white; margin: 10% auto; padding: 25px; border-radius: 20px; width: 85%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .btn-remove { background: var(--danger-color); color: white; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-family: 'Kanit', sans-serif; }
-        .modal-footer { margin-top: 25px; display: flex; gap: 10px; }
+        .category-scroll { display: flex; overflow-x: auto; padding: 10px 20px; gap: 10px; background: var(--white); white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .category-btn { padding: 8px 16px; border-radius: 20px; border: none; background: var(--accent); color: var(--primary); font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .category-btn.active { background: var(--primary); color: var(--white); }
         
-        .time-select-box { background: #f8f9fa; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px solid #e0e0e0; }
-        .time-select-box label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary-color); }
-        .time-select-box select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: 'Kanit'; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 20px; }
+        .menu-card { background: var(--white); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 100%; transition: opacity 0.3s; }
+        .menu-card.disabled { opacity: 0.6; }
+        .menu-img { width: 100%; height: 120px; object-fit: cover; background: #eee; }
+        .menu-info { padding: 12px; flex-grow: 1; }
+        .menu-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+        .menu-price { color: var(--primary); font-weight: 600; font-size: 1.1rem; }
+        
+        .add-btn { width: 100%; padding: 10px; border: none; background: var(--primary); color: white; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .add-btn:disabled { background: var(--gray); cursor: not-allowed; }
+        .add-btn:active:not(:disabled) { opacity: 0.8; }
+        
+        #cart-modal { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 20px 20px 0 0; padding: 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); transform: translateY(100%); transition: transform 0.3s ease-out; z-index: 1000; max-height: 80vh; overflow-y: auto; }
+        #cart-modal.open { transform: translateY(0); }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .qty-controls { display: flex; align-items: center; gap: 10px; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--primary); background: white; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; color: var(--primary); }
+        
+        .order-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--primary); color: white; padding: 15px 25px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px rgba(45, 106, 79, 0.3); cursor: pointer; z-index: 999; }
+        .msg-box { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 12px 24px; border-radius: 12px; z-index: 2000; display: none; text-align: center; min-width: 200px; }
+        textarea, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-top: 10px; font-size: 1rem; }
+        select.error { border-color: var(--danger); background-color: #fff5f5; }
     </style>
 </head>
 <body>
-    <div id="closed-overlay">
-        <div class="closed-msg">
-            <h2 style="margin-top:0;">ขออภัย! ครัวปิดแล้ว</h2>
-            <p id="opening-hours-text">เวลาเปิดให้บริการ: -</p>
-            <a href="index.html" class="btn-back" style="display:inline-block; margin-top:15px;">กลับหน้าหลัก</a>
+
+    <header>
+        <div>
+            <div style="font-weight: 600; font-size: 1.1rem;">⛰️ โต๊ะ: <span id="display-table">-</span></div>
+            <div id="shop-time-status" class="shop-status">กำลังโหลด...</div>
         </div>
+        <div id="status-dot" title="ระบบพร้อมใช้งาน" style="width: 12px; height: 12px; border-radius: 50%; background: #ccc;"></div>
+    </header>
+
+    <div class="category-scroll" id="category-list">
+        <button class="category-btn active" onclick="filterMenu('all', this)">ทั้งหมด</button>
     </div>
 
-    <div class="header">
-        <h1 id="display-table">โต๊ะของคุณ</h1>
-        <a href="index.html" class="btn-back">← เปลี่ยนโต๊ะ</a>
+    <div class="menu-grid" id="menu-container"></div>
+
+    <div class="order-bar" id="order-bar" style="display: none;" onclick="toggleCart()">
+        <span id="cart-count">0 รายการ</span>
+        <span style="font-weight: 600;">ดูตะกร้าสินค้า 🛒</span>
+        <span id="cart-total">฿0</span>
     </div>
 
-    <div class="category-nav">
-        <a href="#cat-เมนูแนะนำ" class="nav-btn">✨ เมนูแนะนำ</a>
-        <a href="#cat-อาหารจานเดียว" class="nav-btn">🍛 อาหารจานเดียว</a>
-        <a href="#cat-กับข้าว" class="nav-btn">🍱 กับข้าว</a>
-        <a href="#cat-เครื่องดื่ม" class="nav-btn">🥤 เครื่องดื่ม</a>
-    </div>
-
-    <div id="menu-container" class="menu-grid">
-        <p>กำลังโหลดเมนูรสเด็ด...</p>
-    </div>
-
-    <div class="cart-bar" id="cart-bar" style="display: none;">
-        <div class="cart-info">
-            <h4 id="cart-count">เลือกแล้ว 0 รายการ</h4>
-            <div class="cart-total">฿<span id="total-price">0</span></div>
+    <div id="cart-modal">
+        <h3 style="margin-top: 0; display: flex; justify-content: space-between;">รายการอาหาร <span onclick="toggleCart()" style="cursor:pointer; color: #999;">✕</span></h3>
+        <div id="cart-items-list"></div>
+        <div style="margin-top: 20px;">
+            <label style="font-weight: 600;">⏰ เลือกเวลาเสิร์ฟ <span style="color:var(--danger)">*</span>:</label>
+            <select id="serving-time">
+                <option value="" selected disabled>-- กรุณาเลือกเวลาเสิร์ฟ --</option>
+            </select>
+            <label style="font-weight: 600; display: block; margin-top: 15px;">📝 หมายเหตุเพิ่มเติม (ถ้ามี):</label>
+            <textarea id="global-note" placeholder="เช่น ไม่เผ็ด, แพ้กุ้ง..."></textarea>
         </div>
-        <button class="btn-checkout" onclick="openCartModal()">ดูตะกร้า/สั่งอาหาร</button>
+        <button id="submit-order-btn" onclick="sendOrder()" style="width:100%; background: var(--primary); color:white; border:none; padding:15px; border-radius:12px; font-size:1.1rem; font-weight:600; margin-top:20px; cursor:pointer;">ยืนยันการสั่งอาหาร</button>
     </div>
 
-    <div id="cartModal" class="modal">
-        <div class="modal-content">
-            <h2 style="color: var(--primary-color); margin-top: 0;">สรุปรายการอาหาร</h2>
-            <hr border="0" style="height: 1px; background: #eee;">
-            <div id="modal-items-list"></div>
-            
-            <div class="time-select-box">
-                <label>⌛ เลือกเวลาที่จะรับประทาน:</label>
-                <select id="select-eat-time">
-                    <option value="">-- โปรดเลือกเวลา --</option>
-                </select>
-            </div>
-
-            <div style="margin-top: 20px; text-align: right; font-size: 1.2rem;">
-                <strong>รวมทั้งสิ้น: ฿<span id="modal-total-price">0</span></strong>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-family: 'Kanit';">เลือกเพิ่ม</button>
-                <button id="confirm-order-btn" onclick="sendOrder()" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-family: 'Kanit'; font-weight: 600;">ยืนยันสั่งอาหาร</button>
-            </div>
-        </div>
-    </div>
+    <div class="msg-box" id="msg-box"></div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const tname = urlParams.get('tname') || 'ไม่ได้เลือกโต๊ะ';
-        document.getElementById('display-table').innerText = "โต๊ะที่ " + tname;
+        const tname = urlParams.get('tname') || "ไม่ได้ระบุ";
+        document.getElementById('display-table').innerText = tname;
 
+        let menuData = [];
         let cart = [];
-        let isKitchenOpen = true;
-        let timeOptions = [];
+        let telegramConfig = { token: "", chatID: "" };
+        let isShopOpen = true;
 
-        async function loadMenus() {
+        async function init() {
             try {
                 const response = await fetch('data.json');
                 const data = await response.json();
-                checkKitchenTime(data.Ttime[0]);
-                timeOptions = data.Teat;
-                renderMenusByCategory(data.menus);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('menu-container').innerHTML = 'ไม่สามารถโหลดข้อมูลได้';
-            }
-        }
+                menuData = data.menus;
+                
+                // ตรวจสอบเวลาเปิด-ปิดร้าน
+                checkShopTime(data.Ttime);
 
-        function checkKitchenTime(timeConfig) {
-            const now = new Date();
-            const currentTime = now.getHours() * 60 + now.getMinutes();
-            const parseTime = (timeStr) => {
-                const [hours, minutes] = timeStr.replace('น.', '').split(':');
-                return parseInt(hours) * 60 + parseInt(minutes);
-            };
-            const openTime = parseTime(timeConfig.timeopen);
-            const closeTime = parseTime(timeConfig.timeclose);
-            if (currentTime < openTime || currentTime >= closeTime) {
-                isKitchenOpen = false;
-                document.getElementById('closed-overlay').style.display = 'flex';
-                document.getElementById('opening-hours-text').innerText = `เวลาเปิดให้บริการ: ${timeConfig.timeopen} - ${timeConfig.timeclose}`;
-            }
-        }
-
-        function renderMenusByCategory(menus) {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
-            const categoryOrder = ["เมนูแนะนำ", "อาหารจานเดียว", "กับข้าว", "เครื่องดื่ม"];
-            const grouped = menus.reduce((acc, menu) => {
-                if (menu.Mstatus === 1) {
-                    if (!acc[menu.Mtype]) acc[menu.Mtype] = [];
-                    acc[menu.Mtype].push(menu);
+                if(data.telegram && data.telegram.length > 0) {
+                    telegramConfig = data.telegram[0];
                 }
-                return acc;
-            }, {});
-            categoryOrder.forEach(category => {
-                if (grouped[category]) {
-                    const title = document.createElement('h2');
-                    title.className = 'category-title';
-                    title.id = `cat-${category}`;
-                    title.innerText = category;
-                    container.appendChild(title);
-                    grouped[category].forEach(menu => {
-                        const div = document.createElement('div');
-                        div.className = 'menu-item';
-                        const noteHtml = menu.Mnote ? `<span class="menu-note">(${menu.Mnote})</span>` : `<span class="menu-note"></span>`;
-                        div.innerHTML = `
-                            <img src="img/${menu.Mimg}" onerror="this.src='https://via.placeholder.com/300x200?text=Food'">
-                            <div class="menu-content">
-                                <h3>${menu.Mid}</h3>
-                                ${noteHtml}
-                                <p class="price">฿${menu.Mprice}</p>
-                                <button class="btn-order" onclick="addToCart('${menu.Mid}', ${menu.Mprice}, '${menu.Mnote || ''}')">เลือกใส่ตะกร้า</button>
-                            </div>
-                        `;
-                        container.appendChild(div);
+
+                const timeSelect = document.getElementById('serving-time');
+                if(data.Ttimeservice) {
+                    data.Ttimeservice.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t;
+                        opt.innerText = t;
+                        timeSelect.appendChild(opt);
                     });
                 }
+
+                const categories = [...new Set(menuData.map(m => m.Mtype))];
+                renderCategories(categories);
+                renderMenu(menuData);
+                document.getElementById('status-dot').style.background = '#27ae60';
+            } catch (e) {
+                console.error("Load fail", e);
+                showMsg("❌ ไม่สามารถโหลดข้อมูลได้");
+            }
+        }
+
+        function checkShopTime(timeConfig) {
+            if (!timeConfig || timeConfig.length === 0) return;
+            
+            const config = timeConfig[0];
+            const now = new Date();
+            const currentTimeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            // แปลงเวลาจากรูปแบบ "13:00น." เป็น "13:00"
+            const openTime = config.timeopen.replace('น.', '');
+            const closeTime = config.timeclose.replace('น.', '');
+            
+            const statusEl = document.getElementById('shop-time-status');
+            
+            if (currentTimeStr >= openTime && currentTimeStr <= closeTime) {
+                isShopOpen = true;
+                statusEl.innerText = `🟢 เปิด (ปิด ${config.timeclose})`;
+                statusEl.className = "shop-status status-open";
+            } else {
+                isShopOpen = false;
+                statusEl.innerText = `🔴 ครัวปิด (เปิด ${config.timeopen})`;
+                statusEl.className = "shop-status status-closed";
+            }
+        }
+
+        function renderCategories(categories) {
+            const list = document.getElementById('category-list');
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.innerText = cat;
+                btn.onclick = () => filterMenu(cat, btn);
+                list.appendChild(btn);
             });
         }
 
-        function addToCart(name, price, note) {
-            if(!isKitchenOpen) { alert('ขออภัย ครัวปิดแล้ว'); return; }
-            const found = cart.find(item => item.name === name);
-            if (found) { found.quantity += 1; } else { cart.push({ name: name, price: price, quantity: 1, note: note }); }
+        function renderMenu(items) {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `menu-card ${!isShopOpen ? 'disabled' : ''}`;
+                const imgSrc = item.Mimg ? `img/${item.Mimg}` : `https://placehold.co/400x300?text=${encodeURIComponent(item.Mid)}`;
+                
+                card.innerHTML = `
+                    <img src="${imgSrc}" class="menu-img" alt="${item.Mid}" onerror="this.src='https://placehold.co/400x300?text=${encodeURIComponent(item.Mid)}'">
+                    <div class="menu-info">
+                        <div class="menu-name">${item.Mid}</div>
+                        <div class="menu-price">฿${item.Mprice}</div>
+                        ${item.Mnote ? `<small style="color:#666; display:block; margin-top:4px;">(${item.Mnote})</small>` : ''}
+                    </div>
+                    <button class="add-btn" 
+                            onclick="addToCart('${item.Mid}', ${item.Mprice})" 
+                            ${!isShopOpen ? 'disabled' : ''}>
+                        ${isShopOpen ? 'เพิ่มลงตะกร้า' : 'ครัวปิด'}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterMenu(type, btn) {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(type === 'all') renderMenu(menuData);
+            else renderMenu(menuData.filter(m => m.Mtype === type));
+        }
+
+        function addToCart(name, price) {
+            if(!isShopOpen) return;
+            const existing = cart.find(i => i.name === name);
+            if(existing) existing.qty++;
+            else cart.push({ name, price, qty: 1 });
             updateCartUI();
+            showMsg(`เพิ่ม ${name} แล้ว`);
         }
 
         function updateCartUI() {
-            const cartBar = document.getElementById('cart-bar');
-            const cartCount = document.getElementById('cart-count');
-            const totalPrice = document.getElementById('total-price');
-            if (cart.length > 0) {
-                cartBar.style.display = 'flex';
-                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-                const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                cartCount.innerText = `เลือกแล้ว ${totalItems} รายการ`;
-                totalPrice.innerText = totalAmount.toLocaleString();
-            } else { cartBar.style.display = 'none'; }
+            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            const totalAmt = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            document.getElementById('cart-count').innerText = `${totalQty} รายการ`;
+            document.getElementById('cart-total').innerText = `฿${totalAmt.toLocaleString()}`;
+            document.getElementById('order-bar').style.display = totalQty > 0 ? 'flex' : 'none';
+            renderCartItems();
         }
 
-        function openCartModal() {
-            const modal = document.getElementById('cartModal');
-            const listContainer = document.getElementById('modal-items-list');
-            const timeSelect = document.getElementById('select-eat-time');
-            listContainer.innerHTML = '';
-            
-            if(timeSelect.options.length <= 1) {
-                timeOptions.forEach(t => {
-                    let opt = new Option(t, t);
-                    timeSelect.add(opt);
-                });
+        function renderCartItems() {
+            const list = document.getElementById('cart-items-list');
+            if(cart.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999; padding: 20px 0;">ตะกร้าว่างเปล่า</p>';
+                return;
             }
-
+            list.innerHTML = '';
             cart.forEach((item, index) => {
-                const itemRow = document.createElement('div');
-                itemRow.className = 'cart-item-row';
-                itemRow.innerHTML = `<div><strong>${item.name}</strong><br><small>฿${item.price} x ${item.quantity}</small></div>
-                    <div style="display: flex; align-items: center; gap: 15px;"><span style="font-weight:bold;">฿${(item.price * item.quantity).toLocaleString()}</span>
-                    <button class="btn-remove" onclick="removeFromCart(${index})">ลบ</button></div>`;
-                listContainer.appendChild(itemRow);
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight:500">${item.name}</div>
+                        <small style="color:var(--primary)">฿${(item.price * item.qty).toLocaleString()}</small>
+                    </div>
+                    <div class="qty-controls">
+                        <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                        <span>${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                    </div>`;
+                list.appendChild(div);
             });
-            document.getElementById('modal-total-price').innerText = document.getElementById('total-price').innerText;
-            modal.style.display = 'block';
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
+        function changeQty(index, delta) {
+            cart[index].qty += delta;
+            if(cart[index].qty <= 0) cart.splice(index, 1);
             updateCartUI();
-            if (cart.length === 0) { closeModal(); } else { openCartModal(); }
         }
 
-        function closeModal() { document.getElementById('cartModal').style.display = 'none'; }
+        function toggleCart() { 
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('open'); 
+        }
+
+        function showMsg(text) { 
+            const box = document.getElementById('msg-box'); 
+            box.innerText = text; 
+            box.style.display = 'block'; 
+            setTimeout(() => { box.style.display = 'none'; }, 2000); 
+        }
 
         async function sendOrder() {
-            const eatTime = document.getElementById('select-eat-time').value;
-            if(!eatTime) { alert('กรุณาเลือกเวลาที่จะรับประทานอาหาร'); return; }
-            if (cart.length === 0 || !isKitchenOpen) return;
-
-            let botToken = "", chatId = "";
-            try {
-                const response = await fetch('data.json');
-                const data = await response.json();
-                botToken = data.telegram[0].token;
-                chatId = data.telegram[0].chatID;
-            } catch (error) { console.error('Config Error:', error); }
-
-            // --- ตรรกะการเจนรหัสออเดอร์ใหม่ ---
-            const now = new Date();
-            const yearBE = now.getFullYear() + 543;
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const dateStr = `${yearBE}${month}${day}`; // เช่น 25690113
-
-            let lastDate = localStorage.getItem('order_date_tracker');
-            let sequence = parseInt(localStorage.getItem('order_seq_tracker') || '0');
-
-            if (lastDate !== dateStr) {
-                sequence = 1; // เริ่มนับ 1 ใหม่เมื่อเปลี่ยนวัน
-                localStorage.setItem('order_date_tracker', dateStr);
-            } else {
-                sequence += 1; // บวกลำดับเพิ่มในวันเดิม
+            if(!isShopOpen) {
+                showMsg("⚠️ ขออภัย ขณะนี้ครัวปิดทำการแล้ว");
+                return;
             }
-            localStorage.setItem('order_seq_tracker', sequence);
-            
-            const oid = `${dateStr}${String(sequence).padStart(3, '0')}`; // ผลลัพธ์ 25690113001
-            // -----------------------------
 
-            const orderListText = cart.map(item => `${item.name}${item.note ? ' ('+item.note+')' : ''} x${item.quantity}`).join('\n- ');
-            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const timeSelect = document.getElementById('serving-time');
+            if(!timeSelect.value) {
+                timeSelect.classList.add('error');
+                showMsg("⚠️ กรุณาเลือกเวลาเสิร์ฟก่อนส่งออเดอร์");
+                timeSelect.focus();
+                return;
+            }
+            timeSelect.classList.remove('error');
 
-            const message = `🔔 *มีออเดอร์ใหม่!*\n--------------------------\n📌 *เลขที่:* ${oid}\n🪑 *โต๊ะ:* ${tname}\n⏰ *เวลาทาน:* ${eatTime}\n📝 *รายการ:*\n- ${orderListText}\n💰 *รวม:* ${totalAmount.toLocaleString()} บาท\n--------------------------`;
+            if(!telegramConfig.token || !telegramConfig.chatID) {
+                showMsg("❌ ตั้งค่า Telegram ไม่ครบถ้วน");
+                return;
+            }
 
-            if (botToken && chatId) {
-                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            const btn = document.getElementById('submit-order-btn');
+            const globalNote = document.getElementById('global-note').value;
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const orderId = Math.random().toString(36).substr(2, 6).toUpperCase();
+
+            btn.disabled = true;
+            btn.innerText = "กำลังส่งออเดอร์...";
+
+            const itemText = cart.map(i => `• ${i.name} x${i.qty}`).join('\n');
+            const message = `🛎 <b>ออเดอร์ใหม่! [#${orderId}]</b>\n📍 โต๊ะ: <b>${tname}</b>\n⏰ เวลาเสิร์ฟ: ${timeSelect.value}\n------------------\n${itemText}\n------------------\n📝 หมายเหตุ: ${globalNote || '-'}\n💰 ยอดรวม: <b>฿${total.toLocaleString()}</b>`;
+
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${telegramConfig.token}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
+                    body: JSON.stringify({ chat_id: telegramConfig.chatID, text: message, parse_mode: 'HTML' })
                 });
+
+                if(res.ok) {
+                    const savedOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
+                    savedOrders.push({ 
+                        orderId, tname, items: [...cart], total, 
+                        timestamp: new Date().toLocaleTimeString('th-TH'), 
+                        selectedTime: timeSelect.value, globalNote 
+                    });
+                    localStorage.setItem('my_orders', JSON.stringify(savedOrders));
+                    
+                    showMsg("✅ ส่งออเดอร์สำเร็จ!");
+                    setTimeout(() => { 
+                        window.location.href = `orders.html?tname=${encodeURIComponent(tname)}`; 
+                    }, 1500);
+                } else { 
+                    throw new Error("Telegram API Error"); 
+                }
+            } catch (e) {
+                showMsg("❌ ส่งไม่สำเร็จ โปรดแจ้งพนักงาน");
+                btn.disabled = false;
+                btn.innerText = "ยืนยันการสั่งอาหาร";
             }
-
-            const orderData = {
-                "Oid": oid,
-                "Olist": `(เวลาทาน: ${eatTime}) รายการ: ${orderListText.replace(/\n- /g, ', ')}`,
-                "Oprice": totalAmount,
-                "Ostatus": 1,
-                "Otable": tname
-            };
-
-            let existingOrders = JSON.parse(localStorage.getItem('temp_orders') || '[]');
-            existingOrders.push(orderData);
-            localStorage.setItem('temp_orders', JSON.stringify(existingOrders));
-
-            alert('สั่งอาหารเรียบร้อยแล้ว!');
-            window.location.href = `orders.html?tname=${encodeURIComponent(tname)}`;
         }
 
-        loadMenus();
+        window.onload = init;
     </script>
 </body>
 </html>
